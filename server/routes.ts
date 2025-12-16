@@ -1,11 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { getClinicalResponse, type Mode } from "./lib/anthropic";
+import { getClinicalResponse, type Mode, type ChatMessage } from "./lib/anthropic";
 import { z } from "zod";
 
 const chatRequestSchema = z.object({
-  message: z.string().min(1),
+  messages: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string(),
+  })),
   mode: z.enum(["ARGUE", "GRANDSTAND"]),
 });
 
@@ -13,12 +16,11 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Chat endpoint - returns Claude's response based on mode
   app.post("/api/chat", async (req, res) => {
     try {
-      const { message, mode } = chatRequestSchema.parse(req.body);
+      const { messages, mode } = chatRequestSchema.parse(req.body);
       
-      const response = await getClinicalResponse(message, mode as Mode);
+      const response = await getClinicalResponse(messages as ChatMessage[], mode as Mode);
       
       res.json({ response });
     } catch (error: any) {
@@ -28,7 +30,6 @@ export async function registerRoutes(
         });
       }
       
-      // Handle FREE_CLOUD_BUDGET_EXCEEDED specifically
       if (error?.message?.includes("FREE_CLOUD_BUDGET_EXCEEDED")) {
         return res.status(402).json({ 
           error: "Cloud budget exceeded. Please upgrade your plan to continue.",

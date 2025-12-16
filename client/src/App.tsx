@@ -2,14 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { Switch, Route } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- Types ---
 type Mode = "ARGUE" | "GRANDSTAND" | null;
 type Message = {
   role: "User" | "Clinic";
   text: string;
 };
-
-// --- Components ---
 
 function LandingPage({ onSelectMode }: { onSelectMode: (mode: Mode) => void }) {
   return (
@@ -78,16 +75,23 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
     if (!input.trim() || isTyping) return;
 
     const userMsg: Message = { role: "User", text: input };
-    setHistory((prev) => [...prev, userMsg]);
+    const newHistory = [...history, userMsg];
+    setHistory(newHistory);
     setInput("");
     setIsTyping(true);
     setError(null);
+
+    // Convert history to API format (include current message)
+    const apiMessages = newHistory.map(msg => ({
+      role: msg.role === "User" ? "user" as const : "assistant" as const,
+      content: msg.text,
+    }));
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg.text, mode }),
+        body: JSON.stringify({ messages: apiMessages, mode }),
       });
 
       const data = await response.json();
@@ -96,10 +100,10 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
         throw new Error(data.error || "Failed to get response");
       }
 
-      setHistory((prev) => [...prev, { role: "Clinic", text: data.response }]);
+      setHistory(prev => [...prev, { role: "Clinic", text: data.response }]);
     } catch (err: any) {
       setError(err.message);
-      setHistory((prev) => [...prev, { role: "Clinic", text: `[Error: ${err.message}]` }]);
+      setHistory(prev => [...prev, { role: "Clinic", text: `[Error: ${err.message}]` }]);
     } finally {
       setIsTyping(false);
     }
@@ -107,9 +111,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
 
   return (
     <div className={`min-h-screen w-full bg-white ${textColor} font-mono`}>
-      {/* Centered Container */}
       <div className="max-w-[800px] mx-auto px-4 md:px-8 py-4 md:py-8 flex flex-col min-h-screen">
-        {/* Back Button - aligned to container edge */}
         <div className="mb-8">
           <button 
             onClick={onBack}
@@ -120,7 +122,6 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
           </button>
         </div>
 
-        {/* Chat Area */}
         <div 
           ref={scrollRef}
           className="flex-1 overflow-y-auto no-scrollbar"
@@ -156,7 +157,6 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
             </div>
           )}
 
-          {/* Input Line */}
           <form 
             onSubmit={handleSend} 
             className="grid" 
@@ -213,7 +213,7 @@ function App() {
       </Route>
       <Route>
         <div className="min-h-screen flex items-center justify-center">
-             404 - Lost in the Clinic
+          404 - Lost in the Clinic
         </div>
       </Route>
     </Switch>
