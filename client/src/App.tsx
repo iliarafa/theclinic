@@ -111,11 +111,11 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
 
   return (
     <div className={`min-h-screen w-full bg-white ${textColor} font-mono`}>
-      <div className="max-w-[800px] mx-auto px-4 md:px-8 py-4 md:py-8 flex flex-col min-h-screen">
-        <div className="mb-8">
+      <div className="max-w-[600px] mx-auto px-4 md:px-6 py-4 md:py-6 flex flex-col min-h-screen">
+        <div className="mb-4">
           <button 
             onClick={onBack}
-            className="text-sm uppercase tracking-widest hover:underline opacity-50 hover:opacity-100 transition-opacity"
+            className="text-xs uppercase tracking-wide hover:underline opacity-50 hover:opacity-100 transition-opacity"
             data-testid="button-back"
           >
             ← Back to Clinic
@@ -131,14 +131,14 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
           {history.map((msg, idx) => (
             <div 
               key={idx} 
-              className="grid mb-6" 
-              style={{ gridTemplateColumns: "120px 1fr", gap: "2rem" }}
+              className="grid mb-3" 
+              style={{ gridTemplateColumns: "80px 1fr", gap: "1rem" }}
               data-testid={`message-${idx}`}
             >
-              <span className="text-right uppercase tracking-widest opacity-50 text-lg md:text-xl leading-relaxed">
+              <span className="text-right uppercase tracking-wide opacity-50 text-sm leading-normal">
                 {msg.role}:
               </span>
-              <span className="text-left text-lg md:text-xl leading-relaxed break-words">
+              <span className="text-left text-sm leading-normal break-words">
                 {msg.text}
               </span>
             </div>
@@ -146,23 +146,23 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
           
           {isTyping && (
             <div 
-              className="grid mb-6" 
-              style={{ gridTemplateColumns: "120px 1fr", gap: "2rem" }}
+              className="grid mb-3" 
+              style={{ gridTemplateColumns: "80px 1fr", gap: "1rem" }}
               data-testid="typing-indicator"
             >
-              <span className="text-right uppercase tracking-widest opacity-50 text-lg md:text-xl leading-relaxed">
+              <span className="text-right uppercase tracking-wide opacity-50 text-sm leading-normal">
                 Clinic:
               </span>
-              <span className="text-left text-lg md:text-xl leading-relaxed cursor-blink">|</span>
+              <span className="text-left text-sm leading-normal cursor-blink">|</span>
             </div>
           )}
 
           <form 
             onSubmit={handleSend} 
             className="grid" 
-            style={{ gridTemplateColumns: "120px 1fr", gap: "2rem" }}
+            style={{ gridTemplateColumns: "80px 1fr", gap: "1rem" }}
           >
-            <span className="text-right uppercase tracking-widest opacity-50 text-lg md:text-xl leading-relaxed">
+            <span className="text-right uppercase tracking-wide opacity-50 text-sm leading-normal">
               User:
             </span>
             <input
@@ -170,7 +170,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className={`w-full bg-transparent border-none outline-none p-0 m-0 text-lg md:text-xl leading-relaxed ${textColor}`}
+              className={`w-full bg-transparent border-none outline-none p-0 m-0 text-sm leading-normal ${textColor}`}
               autoFocus
               autoComplete="off"
               disabled={isTyping}
