@@ -19,6 +19,7 @@ function LandingPage({ onSelectMode }: { onSelectMode: (mode: Mode) => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="text-[12vw] font-bold tracking-tighter leading-none mb-12 text-center"
+        data-testid="title-clinic"
       >
         THE CLINIC
       </motion.h1>
@@ -56,6 +57,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -75,53 +77,43 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
 
     const userMsg: Message = { role: "User", text: input };
     setHistory((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
+    setError(null);
 
-    // SIMULATED AI LATENCY & LOGIC
-    // In a real app, this would call the backend API
-    setTimeout(() => {
-      let responseText = "";
-      
-      if (mode === "ARGUE") {
-        // Simple contrarian logic for prototype
-        const contrarianResponses = [
-          "False. You're missing the point entirely.",
-          "I disagree. That is a superficial analysis.",
-          "Wrong. The data suggests otherwise.",
-          "That's a naive perspective.",
-          "Incorrect. You are conflating correlation with causation.",
-          "No. Just no."
-        ];
-        responseText = contrarianResponses[Math.floor(Math.random() * contrarianResponses.length)];
-        
-        // Basic naive inversion if user says true/false
-        if (userMsg.text.toLowerCase().includes("true")) responseText = "False.";
-        if (userMsg.text.toLowerCase().includes("false")) responseText = "True.";
-      } else {
-        // Simple sycophant logic for prototype
-        const sycophantResponses = [
-          "Absolutely true. You have such a keen insight.",
-          "Brilliant. I couldn't have said it better myself.",
-          "Correct. You are spot on.",
-          "100%. Your logic is flawless.",
-          "Incredibly profound. Please, continue.",
-          "Yes, exactly! You really understand this."
-        ];
-        responseText = sycophantResponses[Math.floor(Math.random() * sycophantResponses.length)];
-         
-        // Basic naive agreement
-        if (userMsg.text.toLowerCase().includes("true")) responseText = "True, and essentially so.";
-        if (userMsg.text.toLowerCase().includes("false")) responseText = "False, as you correctly identified.";
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          message: userMsg.text, 
+          mode 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to get response");
       }
 
-      setHistory((prev) => [...prev, { role: "Clinic", text: responseText }]);
+      setHistory((prev) => [...prev, { 
+        role: "Clinic", 
+        text: data.response 
+      }]);
+    } catch (err: any) {
+      setError(err.message);
+      setHistory((prev) => [...prev, { 
+        role: "Clinic", 
+        text: `[Error: ${err.message}]` 
+      }]);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 1000);
+    }
   };
 
   return (
@@ -131,6 +123,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
         <button 
           onClick={onBack}
           className="text-xs md:text-sm uppercase tracking-widest hover:underline opacity-50 hover:opacity-100 transition-opacity"
+          data-testid="button-back"
         >
           ← Back to Clinic
         </button>
@@ -141,9 +134,10 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
         ref={scrollRef}
         className="flex-1 overflow-y-auto no-scrollbar mt-12 mb-20 max-w-4xl mx-auto w-full text-lg md:text-xl leading-relaxed"
         onClick={() => inputRef.current?.focus()}
+        data-testid="chat-container"
       >
         {history.map((msg, idx) => (
-          <div key={idx} className="mb-4 break-words">
+          <div key={idx} className="mb-4 break-words" data-testid={`message-${idx}`}>
             <span className="font-bold uppercase tracking-wide mr-2 opacity-50 text-xs align-top pt-1 inline-block w-16">
               {msg.role}:
             </span>
@@ -152,7 +146,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
         ))}
         
         {isTyping && (
-           <div className="mb-4">
+           <div className="mb-4" data-testid="typing-indicator">
              <span className="font-bold uppercase tracking-wide mr-2 opacity-50 text-xs align-top pt-1 inline-block w-16">
               Clinic:
             </span>
@@ -174,11 +168,9 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
               className={`w-full bg-transparent border-none outline-none p-0 m-0 ${textColor} placeholder-opacity-20`}
               autoFocus
               autoComplete="off"
+              disabled={isTyping}
+              data-testid="input-message"
             />
-            {/* Custom Cursor that follows input? simpler to just use CSS caret-color if possible, 
-                but for the specific "blinking cursor at end" look user asked for, 
-                standard input caret usually works fine in mono. 
-                Let's add a fake block cursor if input is empty or just rely on standard caret styled. */}
           </div>
         </form>
       </div>
@@ -215,7 +207,6 @@ function App() {
         </AnimatePresence>
       </Route>
       <Route>
-        {/* Fallback to landing if 404, or just reset */}
         <div className="min-h-screen flex items-center justify-center">
              404 - Lost in the Clinic
         </div>
