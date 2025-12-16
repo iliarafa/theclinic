@@ -135,10 +135,10 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
               style={{ gridTemplateColumns: "80px 1fr", gap: "1rem" }}
               data-testid={`message-${idx}`}
             >
-              <span className="text-right uppercase tracking-wide opacity-50 leading-normal" style={{ fontSize: "14px" }}>
+              <span className="text-right uppercase tracking-wide opacity-50 leading-normal" style={{ fontSize: "13px" }}>
                 {msg.role}:
               </span>
-              <span className="text-left leading-normal break-words" style={{ fontSize: "14px" }}>
+              <span className="text-left leading-normal break-words" style={{ fontSize: "13px" }}>
                 {msg.text}
               </span>
             </div>
@@ -150,10 +150,10 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
               style={{ gridTemplateColumns: "80px 1fr", gap: "1rem" }}
               data-testid="typing-indicator"
             >
-              <span className="text-right uppercase tracking-wide opacity-50 leading-normal" style={{ fontSize: "14px" }}>
+              <span className="text-right uppercase tracking-wide opacity-50 leading-normal" style={{ fontSize: "13px" }}>
                 Clinic:
               </span>
-              <span className="text-left leading-normal cursor-blink" style={{ fontSize: "14px" }}>|</span>
+              <span className="text-left leading-normal cursor-blink" style={{ fontSize: "13px" }}>|</span>
             </div>
           )}
 
@@ -162,7 +162,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
             className="grid" 
             style={{ gridTemplateColumns: "80px 1fr", gap: "1rem" }}
           >
-            <span className="text-right uppercase tracking-wide opacity-50 leading-normal" style={{ fontSize: "14px" }}>
+            <span className="text-right uppercase tracking-wide opacity-50 leading-normal" style={{ fontSize: "13px" }}>
               User:
             </span>
             <input
@@ -171,7 +171,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className={`w-full bg-transparent border-none outline-none p-0 m-0 leading-normal ${textColor}`}
-              style={{ fontSize: "14px" }}
+              style={{ fontSize: "13px" }}
               autoFocus
               autoComplete="off"
               disabled={isTyping}
