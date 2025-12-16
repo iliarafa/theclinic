@@ -61,12 +61,10 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -89,10 +87,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          message: userMsg.text, 
-          mode 
-        }),
+        body: JSON.stringify({ message: userMsg.text, mode }),
       });
 
       const data = await response.json();
@@ -101,78 +96,88 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
         throw new Error(data.error || "Failed to get response");
       }
 
-      setHistory((prev) => [...prev, { 
-        role: "Clinic", 
-        text: data.response 
-      }]);
+      setHistory((prev) => [...prev, { role: "Clinic", text: data.response }]);
     } catch (err: any) {
       setError(err.message);
-      setHistory((prev) => [...prev, { 
-        role: "Clinic", 
-        text: `[Error: ${err.message}]` 
-      }]);
+      setHistory((prev) => [...prev, { role: "Clinic", text: `[Error: ${err.message}]` }]);
     } finally {
       setIsTyping(false);
     }
   };
 
   return (
-    <div className={`min-h-screen w-full bg-white ${textColor} font-mono p-4 md:p-8 flex flex-col`}>
-      {/* Header / Back Button */}
-      <div className="fixed top-4 left-4 md:top-8 md:left-8 z-10">
-        <button 
-          onClick={onBack}
-          className="text-xs md:text-sm uppercase tracking-widest hover:underline opacity-50 hover:opacity-100 transition-opacity"
-          data-testid="button-back"
+    <div className={`min-h-screen w-full bg-white ${textColor} font-mono`}>
+      {/* Centered Container */}
+      <div className="max-w-[800px] mx-auto px-4 md:px-8 py-4 md:py-8 flex flex-col min-h-screen">
+        {/* Back Button - aligned to container edge */}
+        <div className="mb-8">
+          <button 
+            onClick={onBack}
+            className="text-sm uppercase tracking-widest hover:underline opacity-50 hover:opacity-100 transition-opacity"
+            data-testid="button-back"
+          >
+            ← Back to Clinic
+          </button>
+        </div>
+
+        {/* Chat Area */}
+        <div 
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto no-scrollbar"
+          onClick={() => inputRef.current?.focus()}
+          data-testid="chat-container"
         >
-          ← Back to Clinic
-        </button>
-      </div>
+          {history.map((msg, idx) => (
+            <div 
+              key={idx} 
+              className="grid mb-6" 
+              style={{ gridTemplateColumns: "120px 1fr", gap: "2rem" }}
+              data-testid={`message-${idx}`}
+            >
+              <span className="text-right uppercase tracking-widest opacity-50 text-lg md:text-xl leading-relaxed">
+                {msg.role}:
+              </span>
+              <span className="text-left text-lg md:text-xl leading-relaxed break-words">
+                {msg.text}
+              </span>
+            </div>
+          ))}
+          
+          {isTyping && (
+            <div 
+              className="grid mb-6" 
+              style={{ gridTemplateColumns: "120px 1fr", gap: "2rem" }}
+              data-testid="typing-indicator"
+            >
+              <span className="text-right uppercase tracking-widest opacity-50 text-lg md:text-xl leading-relaxed">
+                Clinic:
+              </span>
+              <span className="text-left text-lg md:text-xl leading-relaxed cursor-blink">|</span>
+            </div>
+          )}
 
-      {/* Chat Area */}
-      <div 
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto no-scrollbar mt-12 mb-20 max-w-4xl mx-auto w-full text-lg md:text-xl leading-relaxed"
-        onClick={() => inputRef.current?.focus()}
-        data-testid="chat-container"
-      >
-        {history.map((msg, idx) => (
-          <div key={idx} className="mb-4 break-words" data-testid={`message-${idx}`}>
-            <span className="font-bold uppercase tracking-wide mr-2 opacity-50 text-xs align-top pt-1 inline-block w-16">
-              {msg.role}:
+          {/* Input Line */}
+          <form 
+            onSubmit={handleSend} 
+            className="grid" 
+            style={{ gridTemplateColumns: "120px 1fr", gap: "2rem" }}
+          >
+            <span className="text-right uppercase tracking-widest opacity-50 text-lg md:text-xl leading-relaxed">
+              User:
             </span>
-            <span>{msg.text}</span>
-          </div>
-        ))}
-        
-        {isTyping && (
-           <div className="mb-4" data-testid="typing-indicator">
-             <span className="font-bold uppercase tracking-wide mr-2 opacity-50 text-xs align-top pt-1 inline-block w-16">
-              Clinic:
-            </span>
-             <span className="cursor-blink">|</span>
-           </div>
-        )}
-
-        {/* Input Line */}
-        <form onSubmit={handleSend} className="flex items-start">
-          <span className="font-bold uppercase tracking-wide mr-2 opacity-50 text-xs align-top pt-1 inline-block w-16 shrink-0">
-            User:
-          </span>
-          <div className="relative flex-1">
-             <input
+            <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className={`w-full bg-transparent border-none outline-none p-0 m-0 ${textColor} placeholder-opacity-20`}
+              className={`w-full bg-transparent border-none outline-none p-0 m-0 text-lg md:text-xl leading-relaxed ${textColor}`}
               autoFocus
               autoComplete="off"
               disabled={isTyping}
               data-testid="input-message"
             />
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
