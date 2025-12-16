@@ -153,7 +153,7 @@ function ChatInterface({ mode, onBack }: { mode: "ARGUE" | "GRANDSTAND"; onBack:
               <span className="text-right uppercase tracking-wide opacity-50 leading-normal" style={{ fontSize: "13px" }}>
                 Clinic:
               </span>
-              <span className="text-left leading-normal cursor-blink" style={{ fontSize: "13px" }}>|</span>
+              <span className="text-left leading-normal cursor-blink" style={{ fontSize: "13px" }}>█</span>
             </div>
           )}
 
